@@ -1,0 +1,26 @@
+services:
+  nginx:
+    restart: always
+  
+  rest-api:
+    build:
+      dockerfile: dev.Dockerfile
+    image: rest-api:dev
+
+  ui:
+    build: 
+      dockerfile: dev.Dockerfile
+    image: ui:dev
+    command: sh -c "npm install && npm run dev"
+    volumes:
+      - /node_modules
+
+  mongo:
+    image: nertworkweb/mongodb-no-avx
+    volumes:
+      - mongodb-test:/data/db
+    command: --bind_ip_all
+
+volumes:
+  mongodb-test:
+

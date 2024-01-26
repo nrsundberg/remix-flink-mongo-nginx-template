@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./nginx/nginx.conf:/tmp/nginx.conf
+    command: /bin/bash -c "envsubst < /tmp/nginx.conf > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'" 
+    ports:
+      - "80:80"
+    expose:
+      - 80
+    depends_on:
+      - rest-api
+      - ui
+      - mongo
+
+  rest-api:
+    build:
+      context: rest-api
+      dockerfile: Dockerfile
+    image: rest-api:latest
+    expose:
+      - 9091
+    # volumes:
+      # - ./server:/server
+    depends_on:
+      -  mongo
+
+  ui:
+    build: 
+      context: ui
+      dockerfile: Dockerfile
+    image: ui:latest
+    expose:
+      - 3000
+    command: sh -c "npm build && npm run prod"
+
+  mongo:
+    image: mongo:7.0.0
+    environment:
+        - MONGO_INITDB_ROOT_USERNAME=${MG_USER}
+        - MONGO_INITDB_ROOT_PASSWORD=${MG_PASS}
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-email:/data/db
+
+volumes:
+  mongodb-email:
